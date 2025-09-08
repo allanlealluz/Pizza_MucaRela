@@ -1,0 +1,162 @@
+
+<h1 class="mb-4 text-danger">Monte sua Pizza</h1>
+
+<form id="pizzaForm" method="POST" action="/pedido">
+  <!-- Sabores -->
+  <div class="mb-4">
+    <h4>Sabores (até 2)</h4>
+    <div class="form-check">
+      <input class="form-check-input sabor" type="checkbox" value="Calabresa" data-preco="5" id="sabor1">
+      <label class="form-check-label" for="sabor1">Calabresa (+R$5,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input sabor" type="checkbox" value="Portuguesa" data-preco="6" id="sabor2">
+      <label class="form-check-label" for="sabor2">Portuguesa (+R$6,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input sabor" type="checkbox" value="Frango c/ Catupiry" data-preco="7" id="sabor3">
+      <label class="form-check-label" for="sabor3">Frango c/ Catupiry (+R$7,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input sabor" type="checkbox" value="Marguerita" data-preco="5" id="sabor4">
+      <label class="form-check-label" for="sabor4">Marguerita (+R$5,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input sabor" type="checkbox" value="Quatro Queijos" data-preco="8" id="sabor5">
+      <label class="form-check-label" for="sabor5">Quatro Queijos (+R$8,00)</label>
+    </div>
+  </div>
+
+  <!-- Tamanhos -->
+  <div class="mb-4">
+    <h4>Tamanho</h4>
+    <div class="form-check">
+      <input class="form-check-input tamanho" type="radio" name="tamanho" value="Pequena" data-preco="25" id="tam1">
+      <label class="form-check-label" for="tam1">Pequena (R$25,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input tamanho" type="radio" name="tamanho" value="Média" data-preco="35" id="tam2">
+      <label class="form-check-label" for="tam2">Média (R$35,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input tamanho" type="radio" name="tamanho" value="Grande" data-preco="45" id="tam3">
+      <label class="form-check-label" for="tam3">Grande (R$45,00)</label>
+    </div>
+  </div>
+
+  <!-- Borda -->
+  <div class="mb-4">
+    <h4>Borda Recheada</h4>
+    <div class="form-check">
+      <input class="form-check-input borda" type="radio" name="borda" value="Catupiry" data-preco="5" id="borda1">
+      <label class="form-check-label" for="borda1">Catupiry (+R$5,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input borda" type="radio" name="borda" value="Cheddar" data-preco="5" id="borda2">
+      <label class="form-check-label" for="borda2">Cheddar (+R$5,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input borda" type="radio" name="borda" value="Chocolate" data-preco="6" id="borda3">
+      <label class="form-check-label" for="borda3">Chocolate (+R$6,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input borda" type="radio" name="borda" value="Sem Borda" data-preco="0" id="borda4" checked>
+      <label class="form-check-label" for="borda4">Sem Borda (+R$0,00)</label>
+    </div>
+  </div>
+
+  <!-- Adicionais -->
+  <div class="mb-4">
+    <h4>Adicionais</h4>
+    <div class="form-check">
+      <input class="form-check-input adicional" type="checkbox" value="Azeitona" data-preco="2" id="add1">
+      <label class="form-check-label" for="add1">Azeitona (+R$2,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input adicional" type="checkbox" value="Orégano Extra" data-preco="1" id="add2">
+      <label class="form-check-label" for="add2">Orégano Extra (+R$1,00)</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input adicional" type="checkbox" value="Bacon" data-preco="3" id="add3">
+      <label class="form-check-label" for="add3">Bacon (+R$3,00)</label>
+    </div>
+  </div>
+
+  <!-- Valor total e botão -->
+  <div class="mb-4">
+    <h4>Total: <span class="text-success" id="total">R$0,00</span></h4>
+    <button type="submit" class="btn btn-danger btn-lg">Confirmar Pedido</button>
+  </div>
+</form>
+
+<!-- Script para calcular total -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('pizzaForm');
+  const totalEl = document.getElementById('total');
+
+  function calcularTotal() {
+    let total = 0;
+
+    // Sabores (até 2)
+    const sabores = document.querySelectorAll('.sabor:checked');
+    if (sabores.length > 2) {
+      alert("Você pode escolher no máximo 2 sabores.");
+      sabores[sabores.length - 1].checked = false;
+      return;
+    }
+    sabores.forEach(s => total += Number(s.dataset.preco));
+
+    // Tamanho
+    const tamanho = document.querySelector('.tamanho:checked');
+    if (tamanho) total += Number(tamanho.dataset.preco);
+
+    // Borda
+    const borda = document.querySelector('.borda:checked');
+    if (borda) total += Number(borda.dataset.preco);
+
+    // Adicionais
+    document.querySelectorAll('.adicional:checked').forEach(add => {
+      total += Number(add.dataset.preco);
+    });
+
+    totalEl.textContent = `R$ ${total.toFixed(2)}`;
+    return total.toFixed(2);
+  }
+
+  form.addEventListener('change', calcularTotal);
+
+  form.addEventListener('submit', (e) => {
+    const total = calcularTotal();
+
+    // Remove campos ocultos antigos
+    form.querySelectorAll('input[type="hidden"]').forEach(el => el.remove());
+
+    // Criar inputs ocultos
+    const appendHidden = (name, value) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    };
+
+    document.querySelectorAll('.sabor:checked').forEach(s => {
+      appendHidden('sabores[]', s.value);
+    });
+
+    const tamanho = document.querySelector('.tamanho:checked');
+    if (tamanho) appendHidden('tamanho', tamanho.value);
+
+    const borda = document.querySelector('.borda:checked');
+    if (borda) appendHidden('borda', borda.value);
+
+    document.querySelectorAll('.adicional:checked').forEach(a => {
+      appendHidden('adicionais[]', a.value);
+    });
+
+    appendHidden('total', total);
+  });
+});
+
+</script>

@@ -1,0 +1,32 @@
+<h1 class="text-danger mb-4">Resumo do seu Pedido</h1>
+
+<div class="card mb-4 shadow">
+  <div class="card-body">
+    <h4 class="card-title">🍕 Pizza Personalizada</h4>
+    
+    <p><strong>Sabores:</strong> {{#each sabores}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+    <p><strong>Tamanho:</strong> {{tamanho}}</p>
+    <p><strong>Borda:</strong> {{borda}}</p>
+    <p><strong>Adicionais:</strong> 
+      {{#if adicionais.length}}
+        {{#each adicionais}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+      {{else}}
+        Nenhum
+      {{/if}}
+    </p>
+
+    <hr>
+    <h4>Total: <span class="text-success">R$ {{total}}</span></h4>
+  </div>
+</div>
+
+<a href="/" class="btn btn-outline-secondary">Voltar ao Início</a>
+<a href="/cardapio" class="btn btn-outline-primary">Fazer Outro Pedido</a>
+<button class="btn btn-success float-end" onclick="finalizar()">Finalizar Pedido</button>
+
+<script>
+  function finalizar() {
+    alert("✅ Pedido enviado para a cozinha! Obrigado por escolher a Pizzaria MucaRoela!");
+    window.location.href = "/";
+  }
+</script>
