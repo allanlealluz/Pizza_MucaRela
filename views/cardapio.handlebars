@@ -1,4 +1,3 @@
-
 <h1 class="mb-4 text-danger">Monte sua Pizza</h1>
 
 <form id="pizzaForm" method="POST" action="/pedido">
@@ -82,81 +81,203 @@
     </div>
   </div>
 
-  <!-- Valor total e botão -->
+  <!-- Valor total e botões -->
   <div class="mb-4">
     <h4>Total: <span class="text-success" id="total">R$0,00</span></h4>
-    <button type="submit" class="btn btn-danger btn-lg">Confirmar Pedido</button>
+    
+    <!-- Card promocional para bebidas -->
+    <div class="card border-info mb-3" style="max-width: 500px; margin: 20px auto;">
+      <div class="card-body text-center">
+        <h6 class="card-title text-info">🥤 Complete seu pedido!</h6>
+        <p class="card-text small">Que tal uma bebida gelada para acompanhar?</p>
+      </div>
+    </div>
+    
+    <!-- Botões de ação -->
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <button type="submit" class="btn btn-primary btn-lg">
+        <i class="fas fa-eye"></i> Ver Resumo da Pizza
+      </button>
+      <button type="button" class="btn btn-info btn-lg" id="irParaBebidas">
+        <i class="fas fa-plus"></i> Pizza + Bebidas
+      </button>
+    </div>
+    
+    <div class="text-center mt-2">
+      <small class="text-muted">Ou escolha "Ver Resumo" para finalizar apenas com pizza</small>
+    </div>
   </div>
 </form>
 
-<!-- Script para calcular total -->
+<!-- Estilos adicionais -->
+<style>
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.card.border-info {
+  border-width: 2px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+}
+
+@media (max-width: 768px) {
+  .d-flex.flex-wrap button {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 10px;
+  }
+}
+
+.btn {
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+</style>
+
+<!-- Script para calcular total e integração com bebidas -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('pizzaForm');
-  const totalEl = document.getElementById('total');
+    const form = document.getElementById('pizzaForm');
+    const totalEl = document.getElementById('total');
+    const btnBebidas = document.getElementById('irParaBebidas');
 
-  function calcularTotal() {
-    let total = 0;
+    function calcularTotal() {
+      let total = 0;
 
-    // Sabores (até 2)
-    const sabores = document.querySelectorAll('.sabor:checked');
-    if (sabores.length > 2) {
-      alert("Você pode escolher no máximo 2 sabores.");
-      sabores[sabores.length - 1].checked = false;
-      return;
+      // Sabores (até 2)
+      const sabores = document.querySelectorAll('.sabor:checked');
+      if (sabores.length > 2) {
+        alert("Você pode escolher no máximo 2 sabores.");
+        sabores[sabores.length - 1].checked = false;
+        return;
+      }
+      sabores.forEach(s => total += Number(s.dataset.preco));
+
+      // Tamanho
+      const tamanho = document.querySelector('.tamanho:checked');
+      if (tamanho) total += Number(tamanho.dataset.preco);
+
+      // Borda
+      const borda = document.querySelector('.borda:checked');
+      if (borda) total += Number(borda.dataset.preco);
+
+      // Adicionais
+      document.querySelectorAll('.adicional:checked').forEach(add => {
+        total += Number(add.dataset.preco);
+      });
+
+      totalEl.textContent = `R$ ${total.toFixed(2)}`;
+      return total.toFixed(2);
     }
-    sabores.forEach(s => total += Number(s.dataset.preco));
 
-    // Tamanho
-    const tamanho = document.querySelector('.tamanho:checked');
-    if (tamanho) total += Number(tamanho.dataset.preco);
+    function validarPizza() {
+      const sabores = document.querySelectorAll('.sabor:checked');
+      const tamanho = document.querySelector('.tamanho:checked');
+      
+      if (sabores.length === 0) {
+        alert("⚠️ Por favor, selecione pelo menos um sabor para a pizza!");
+        return false;
+      }
+      
+      if (!tamanho) {
+        alert("⚠️ Por favor, selecione um tamanho para a pizza!");
+        return false;
+      }
+      
+      return true;
+    }
 
-    // Borda
-    const borda = document.querySelector('.borda:checked');
-    if (borda) total += Number(borda.dataset.preco);
+    function coletarDadosPizza() {
+      const dados = {
+        sabores: [],
+        tamanho: '',
+        borda: '',
+        adicionais: [],
+        total: calcularTotal()
+      };
 
-    // Adicionais
-    document.querySelectorAll('.adicional:checked').forEach(add => {
-      total += Number(add.dataset.preco);
+      // Coletar sabores
+      document.querySelectorAll('.sabor:checked').forEach(s => {
+        dados.sabores.push(s.value);
+      });
+
+      // Coletar tamanho
+      const tamanho = document.querySelector('.tamanho:checked');
+      if (tamanho) dados.tamanho = tamanho.value;
+
+      // Coletar borda
+      const borda = document.querySelector('.borda:checked');
+      if (borda) dados.borda = borda.value;
+
+      // Coletar adicionais
+      document.querySelectorAll('.adicional:checked').forEach(a => {
+        dados.adicionais.push(a.value);
+      });
+
+      return dados;
+    }
+
+    // Event listener para recalcular total
+    form.addEventListener('change', calcularTotal);
+
+    // Event listener para ir direto às bebidas
+    btnBebidas.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      if (!validarPizza()) {
+        return;
+      }
+
+      // Salvar dados da pizza no localStorage
+      const dadosPizza = coletarDadosPizza();
+      localStorage.setItem('dadosPizza', JSON.stringify(dadosPizza));
+
+      // Redirecionar para bebidas
+      window.location.href = '/bebidas';
     });
 
-    totalEl.textContent = `R$ ${total.toFixed(2)}`;
-    return total.toFixed(2);
-  }
+    // Event listener para o submit normal (ver resumo da pizza)
+    form.addEventListener('submit', (e) => {
+      if (!validarPizza()) {
+        e.preventDefault();
+        return;
+      }
 
-  form.addEventListener('change', calcularTotal);
+      const total = calcularTotal();
 
-  form.addEventListener('submit', (e) => {
-    const total = calcularTotal();
+      // Remove campos ocultos antigos
+      form.querySelectorAll('input[type="hidden"]').forEach(el => el.remove());
 
-    // Remove campos ocultos antigos
-    form.querySelectorAll('input[type="hidden"]').forEach(el => el.remove());
+      // Criar inputs ocultos
+      const appendHidden = (name, value) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      };
 
-    // Criar inputs ocultos
-    const appendHidden = (name, value) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
-    };
+      document.querySelectorAll('.sabor:checked').forEach(s => {
+        appendHidden('sabores[]', s.value);
+      });
 
-    document.querySelectorAll('.sabor:checked').forEach(s => {
-      appendHidden('sabores[]', s.value);
+      const tamanho = document.querySelector('.tamanho:checked');
+      if (tamanho) appendHidden('tamanho', tamanho.value);
+
+      const borda = document.querySelector('.borda:checked');
+      if (borda) appendHidden('borda', borda.value);
+
+      document.querySelectorAll('.adicional:checked').forEach(a => {
+        appendHidden('adicionais[]', a.value);
+      });
+
+      appendHidden('total', total);
     });
 
-    const tamanho = document.querySelector('.tamanho:checked');
-    if (tamanho) appendHidden('tamanho', tamanho.value);
-
-    const borda = document.querySelector('.borda:checked');
-    if (borda) appendHidden('borda', borda.value);
-
-    document.querySelectorAll('.adicional:checked').forEach(a => {
-      appendHidden('adicionais[]', a.value);
-    });
-
-    appendHidden('total', total);
+    // Calcular total inicial
+    calcularTotal();
   });
-});
-
 </script>

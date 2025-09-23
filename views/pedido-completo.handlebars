@@ -1,0 +1,486 @@
+{{!-- pedido-completo.handlebars --}}
+<div class="container">
+    <div class="cabecalho-pedido">
+        <h1>🍕 Pedido Confirmado!</h1>
+        <p class="status-pedido">Seu pedido foi recebido com sucesso</p>
+    </div>
+
+    <div class="detalhes-pedido">
+        {{!-- Seção da Pizza --}}
+        <div class="secao-pizza">
+            <h2>🍕 Sua Pizza</h2>
+            <div class="item-pedido">
+                <div class="info-item">
+                    <h3>Tamanho:</h3>
+                    <p>{{tamanho}}</p>
+                </div>
+                
+                <div class="info-item">
+                    <h3>Sabores:</h3>
+                    {{#if sabores}}
+                        <ul class="lista-sabores">
+                            {{#each sabores}}
+                                <li>{{this}}</li>
+                            {{/each}}
+                        </ul>
+                    {{else}}
+                        <p>Nenhum sabor selecionado</p>
+                    {{/if}}
+                </div>
+
+                <div class="info-item">
+                    <h3>Borda:</h3>
+                    <p>{{borda}}</p>
+                </div>
+
+                {{#if adicionais}}
+                    <div class="info-item">
+                        <h3>Adicionais:</h3>
+                        <ul class="lista-adicionais">
+                            {{#each adicionais}}
+                                <li>{{this}}</li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                {{/if}}
+
+                <div class="total-item">
+                    <strong>Total Pizza: R$ {{totalPizza}}</strong>
+                </div>
+            </div>
+        </div>
+
+        {{!-- Seção das Bebidas --}}
+        {{#if bebidas}}
+            <div class="secao-bebidas">
+                <h2>🥤 Suas Bebidas</h2>
+                <div class="lista-bebidas">
+                    {{#each bebidas}}
+                        <div class="bebida-item">
+                            <div class="bebida-info">
+                                <span class="quantidade">{{quantidade}}x</span>
+                                <span class="nome">{{nome}}</span>
+                                <span class="preco-unitario">(R$ {{preco}} cada)</span>
+                            </div>
+                            <div class="bebida-subtotal">
+                                R$ {{subtotal}}
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+                <div class="total-bebidas">
+                    <strong>Total Bebidas: R$ {{totalBebidas}}</strong>
+                </div>
+            </div>
+        {{else}}
+            <div class="secao-bebidas">
+                <h2>🥤 Bebidas</h2>
+                <p class="sem-bebidas">Nenhuma bebida selecionada</p>
+            </div>
+        {{/if}}
+
+        {{!-- Total Geral --}}
+        <div class="total-geral">
+            <h2>💰 Total do Pedido: R$ {{totalGeral}}</h2>
+        </div>
+    </div>
+
+    {{!-- Informações de Entrega/Retirada --}}
+    <div class="info-entrega">
+        <h3>📍 Próximos Passos</h3>
+        <div class="passos">
+            <div class="passo">
+                <span class="numero">1</span>
+                <p>Seu pedido foi registrado com sucesso</p>
+            </div>
+            <div class="passo">
+                <span class="numero">2</span>
+                <p>Tempo estimado de preparo: 30-45 minutos</p>
+            </div>
+            <div class="passo">
+                <span class="numero">3</span>
+                <p>Entraremos em contato para confirmar os dados de entrega</p>
+            </div>
+        </div>
+    </div>
+
+    {{!-- Resumo para Impressão --}}
+    <div class="resumo-impressao" id="resumoImpressao">
+        <div class="cabecalho-impressao">
+            <h2>🍕 Pizzaria MucaRoela</h2>
+            <p>Pedido #{{timestamp}}</p>
+            <hr>
+        </div>
+        
+        <div class="detalhes-impressao">
+            <h3>PIZZA:</h3>
+            <p>Tamanho: {{tamanho}}</p>
+            <p>Borda: {{borda}}</p>
+            <p>Sabores: {{#each sabores}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+            {{#if adicionais}}
+                <p>Adicionais: {{#each adicionais}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+            {{/if}}
+            <p>Subtotal Pizza: R$ {{totalPizza}}</p>
+            
+            {{#if bebidas}}
+                <hr>
+                <h3>BEBIDAS:</h3>
+                {{#each bebidas}}
+                    <p>{{quantidade}}x {{nome}} - R$ {{subtotal}}</p>
+                {{/each}}
+                <p>Subtotal Bebidas: R$ {{totalBebidas}}</p>
+            {{/if}}
+            
+            <hr>
+            <h3>TOTAL: R$ {{totalGeral}}</h3>
+        </div>
+    </div>
+
+    {{!-- Botões de Ação --}}
+    <div class="acoes-pedido">
+        <button onclick="imprimirPedido()" class="btn-imprimir">🖨️ Imprimir Pedido</button>
+        <button onclick="novoPedido()" class="btn-novo-pedido">🍕 Fazer Novo Pedido</button>
+        <button onclick="window.location.href='/'" class="btn-inicio">🏠 Voltar ao Início</button>
+    </div>
+</div>
+
+<script>
+function imprimirPedido() {
+    const resumo = document.getElementById('resumoImpressao').innerHTML;
+    const novaJanela = window.open('', '_blank');
+    novaJanela.document.write(`
+        <html>
+            <head>
+                <title>Pedido - Pizzaria MucaRoela</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .cabecalho-impressao { text-align: center; margin-bottom: 20px; }
+                    .cabecalho-impressao h2 { margin: 0; color: #d32f2f; }
+                    hr { border: 1px solid #ccc; margin: 10px 0; }
+                    h3 { color: #333; margin: 15px 0 5px 0; }
+                    p { margin: 5px 0; }
+                </style>
+            </head>
+            <body>
+                ${resumo}
+            </body>
+        </html>
+    `);
+    novaJanela.document.close();
+    novaJanela.print();
+}
+
+function novoPedido() {
+    if (confirm('Deseja fazer um novo pedido? Isso irá limpar o pedido atual.')) {
+        window.location.href = '/';
+    }
+}
+
+// Adicionar timestamp para o número do pedido
+document.addEventListener('DOMContentLoaded', function() {
+    const timestamp = new Date().getTime();
+    const timestampElements = document.querySelectorAll('#resumoImpressao .cabecalho-impressao p');
+    if (timestampElements.length > 0) {
+        timestampElements[0].textContent = `Pedido #${timestamp}`;
+    }
+});
+</script>
+
+<style>
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.cabecalho-pedido {
+    text-align: center;
+    background: linear-gradient(135deg, #d32f2f, #f44336);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.cabecalho-pedido h1 {
+    margin: 0;
+    font-size: 2.5em;
+}
+
+.status-pedido {
+    margin: 10px 0 0 0;
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+.detalhes-pedido {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.secao-pizza, .secao-bebidas {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eee;
+}
+
+.secao-pizza h2, .secao-bebidas h2 {
+    color: #d32f2f;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.item-pedido {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.info-item {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.info-item p {
+    margin: 0;
+    color: #666;
+    font-size: 1.1em;
+}
+
+.lista-sabores, .lista-adicionais {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lista-sabores li, .lista-adicionais li {
+    background: #e8f5e8;
+    padding: 8px 12px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border-left: 4px solid #4caf50;
+}
+
+.total-item {
+    background: #fff3e0;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #ff9800;
+    font-size: 1.2em;
+    color: #e65100;
+}
+
+.lista-bebidas {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bebida-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.bebida-item:last-child {
+    border-bottom: none;
+}
+
+.bebida-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.quantidade {
+    background: #d32f2f;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.nome {
+    font-weight: 500;
+    color: #333;
+}
+
+.preco-unitario {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.bebida-subtotal {
+    font-weight: bold;
+    color: #d32f2f;
+    font-size: 1.1em;
+}
+
+.total-bebidas {
+    background: #fff3e0;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #ff9800;
+    margin-top: 15px;
+    font-size: 1.2em;
+    color: #e65100;
+}
+
+.sem-bebidas {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.total-geral {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.total-geral h2 {
+    margin: 0;
+    font-size: 2em;
+}
+
+.info-entrega {
+    background: #e3f2fd;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.info-entrega h3 {
+    color: #1976d2;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.passos {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.passo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.numero {
+    background: #1976d2;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.passo p {
+    margin: 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.resumo-impressao {
+    display: none;
+}
+
+.acoes-pedido {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-imprimir, .btn-novo-pedido, .btn-inicio {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-imprimir {
+    background: #2196f3;
+    color: white;
+}
+
+.btn-imprimir:hover {
+    background: #1976d2;
+    transform: translateY(-2px);
+}
+
+.btn-novo-pedido {
+    background: #4caf50;
+    color: white;
+}
+
+.btn-novo-pedido:hover {
+    background: #388e3c;
+    transform: translateY(-2px);
+}
+
+.btn-inicio {
+    background: #ff9800;
+    color: white;
+}
+
+.btn-inicio:hover {
+    background: #f57c00;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .cabecalho-pedido h1 {
+        font-size: 2em;
+    }
+    
+    .bebida-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .acoes-pedido {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-imprimir, .btn-novo-pedido, .btn-inicio {
+        width: 200px;
+    }
+}
+</style>

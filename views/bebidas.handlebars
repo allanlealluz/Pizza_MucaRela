@@ -1,0 +1,360 @@
+{{!-- bebidas.handlebars --}}
+<div class="container">
+    <h1>Bebidas</h1>
+    <p>Escolha suas bebidas para acompanhar a pizza:</p>
+
+    <form id="formBebidas" action="/pedido-completo" method="POST">
+        {{!-- Campos ocultos para dados da pizza (serão preenchidos via JavaScript) --}}
+        <div id="dadosPizzaHidden"></div>
+
+        {{!-- Exibir bebidas organizadas por categoria --}}
+        {{#each bebidasPorCategoria}}
+            <div class="categoria-bebidas">
+                <h2>{{@key}}</h2>
+                <div class="bebidas-grid">
+                    {{#each this}}
+                        <div class="bebida-item">
+                            <div class="bebida-info">
+                                <h3>{{nome}}</h3>
+                                <p class="preco">R$ {{preco}}</p>
+                            </div>
+                            <div class="bebida-controles">
+                                <label>
+                                    <input type="checkbox" 
+                                           name="bebidas" 
+                                           value="{{id}}" 
+                                           data-preco="{{preco}}"
+                                           data-nome="{{nome}}"
+                                           onchange="toggleBebida(this)">
+                                    Selecionar
+                                </label>
+                                <div class="quantidade-container" style="display: none;">
+                                    <label for="qty-{{id}}">Quantidade:</label>
+                                    <input type="number" 
+                                           name="quantidades" 
+                                           id="qty-{{id}}"
+                                           min="1" 
+                                           value="1"
+                                           onchange="calcularTotal()">
+                                </div>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        {{/each}}
+
+        <div class="resumo-pedido">
+            <h3>Resumo do Pedido</h3>
+            <div id="resumoBebidas">
+                <p>Nenhuma bebida selecionada</p>
+            </div>
+            <div class="totais">
+                <p>Total Bebidas: R$ <span id="totalBebidas">0.00</span></p>
+                <p>Total Pizza: R$ <span id="totalPizza">0.00</span></p>
+                <p><strong>Total Geral: R$ <span id="totalGeral">0.00</span></strong></p>
+            </div>
+        </div>
+
+        {{!-- Campos ocultos para os totais --}}
+        <input type="hidden" name="totalBebidas" id="inputTotalBebidas" value="0.00">
+        <input type="hidden" name="totalGeral" id="inputTotalGeral" value="0.00">
+
+        <div class="botoes-acao">
+            <button type="button" onclick="history.back()" class="btn-voltar">Voltar</button>
+            <button type="submit" class="btn-finalizar">Finalizar Pedido</button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Dados das bebidas para facilitar cálculos no JavaScript
+const bebidas = [
+    {{#each bebidas}}
+    {
+        id: {{id}},
+        nome: "{{nome}}",
+        preco: {{preco}},
+        categoria: "{{categoria}}"
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+];
+
+function toggleBebida(checkbox) {
+    const quantidadeContainer = checkbox.closest('.bebida-controles').querySelector('.quantidade-container');
+    const quantidadeInput = quantidadeContainer.querySelector('input[type="number"]');
+    
+    if (checkbox.checked) {
+        quantidadeContainer.style.display = 'block';
+        quantidadeInput.disabled = false;
+    } else {
+        quantidadeContainer.style.display = 'none';
+        quantidadeInput.disabled = true;
+        quantidadeInput.value = 1;
+    }
+    
+    calcularTotal();
+    atualizarResumo();
+}
+
+function calcularTotal() {
+    const checkboxes = document.querySelectorAll('input[name="bebidas"]:checked');
+    let totalBebidas = 0;
+    
+    checkboxes.forEach(checkbox => {
+        const preco = parseFloat(checkbox.dataset.preco);
+        const quantidadeInput = checkbox.closest('.bebida-controles').querySelector('input[type="number"]');
+        const quantidade = parseInt(quantidadeInput.value) || 1;
+        totalBebidas += preco * quantidade;
+    });
+    
+    const totalPizza = parseFloat(document.getElementById('totalPizza').textContent) || 0;
+    const totalGeral = totalPizza + totalBebidas;
+    
+    // Atualizar interface
+    document.getElementById('totalBebidas').textContent = totalBebidas.toFixed(2);
+    document.getElementById('totalGeral').textContent = totalGeral.toFixed(2);
+    
+    // Atualizar campos ocultos
+    document.getElementById('inputTotalBebidas').value = totalBebidas.toFixed(2);
+    document.getElementById('inputTotalGeral').value = totalGeral.toFixed(2);
+}
+
+function atualizarResumo() {
+    const checkboxes = document.querySelectorAll('input[name="bebidas"]:checked');
+    const resumoDiv = document.getElementById('resumoBebidas');
+    
+    if (checkboxes.length === 0) {
+        resumoDiv.innerHTML = '<p>Nenhuma bebida selecionada</p>';
+        return;
+    }
+    
+    let resumoHTML = '<ul>';
+    checkboxes.forEach(checkbox => {
+        const nome = checkbox.dataset.nome;
+        const preco = parseFloat(checkbox.dataset.preco);
+        const quantidadeInput = checkbox.closest('.bebida-controles').querySelector('input[type="number"]');
+        const quantidade = parseInt(quantidadeInput.value) || 1;
+        const subtotal = (preco * quantidade).toFixed(2);
+        
+        resumoHTML += `<li>${quantidade}x ${nome} - R$ ${subtotal}</li>`;
+    });
+    resumoHTML += '</ul>';
+    
+    resumoDiv.innerHTML = resumoHTML;
+}
+
+// Event listeners para recalcular quando quantidade mudar
+document.addEventListener('DOMContentLoaded', function() {
+    // Carregar dados da pizza do localStorage
+    carregarDadosPizza();
+    
+    const quantidadeInputs = document.querySelectorAll('input[type="number"][name="quantidades"]');
+    quantidadeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            calcularTotal();
+            atualizarResumo();
+        });
+    });
+});
+
+function carregarDadosPizza() {
+    const dadosPizza = localStorage.getItem('dadosPizza');
+    
+    if (!dadosPizza) {
+        alert('Erro: Dados da pizza não encontrados. Redirecionando para o cardápio.');
+        window.location.href = '/cardapio';
+        return;
+    }
+    
+    const pizza = JSON.parse(dadosPizza);
+    
+    // Criar campos ocultos para os dados da pizza
+    const container = document.getElementById('dadosPizzaHidden');
+    
+    // Sabores
+    if (pizza.sabores && pizza.sabores.length > 0) {
+        pizza.sabores.forEach(sabor => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'sabores';
+            input.value = sabor;
+            container.appendChild(input);
+        });
+    }
+    
+    // Tamanho
+    if (pizza.tamanho) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'tamanho';
+        input.value = pizza.tamanho;
+        container.appendChild(input);
+    }
+    
+    // Borda
+    if (pizza.borda) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'borda';
+        input.value = pizza.borda;
+        container.appendChild(input);
+    }
+    
+    // Adicionais
+    if (pizza.adicionais && pizza.adicionais.length > 0) {
+        pizza.adicionais.forEach(adicional => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'adicionais';
+            input.value = adicional;
+            container.appendChild(input);
+        });
+    }
+    
+    // Total da pizza
+    if (pizza.total) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'totalPizza';
+        input.value = pizza.total;
+        container.appendChild(input);
+        
+        // Atualizar interface
+        document.getElementById('totalPizza').textContent = pizza.total;
+        document.getElementById('totalGeral').textContent = pizza.total;
+        document.getElementById('inputTotalGeral').value = pizza.total;
+    }
+}
+</script>
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.categoria-bebidas {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.categoria-bebidas h2 {
+    color: #d32f2f;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #d32f2f;
+    padding-bottom: 5px;
+}
+
+.bebidas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.bebida-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background: #f9f9f9;
+}
+
+.bebida-info h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.preco {
+    font-weight: bold;
+    color: #d32f2f;
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.bebida-controles {
+    text-align: right;
+}
+
+.quantidade-container {
+    margin-top: 10px;
+}
+
+.quantidade-container input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.resumo-pedido {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 30px 0;
+}
+
+.resumo-pedido h3 {
+    color: #d32f2f;
+    margin-bottom: 15px;
+}
+
+.totais p {
+    margin: 5px 0;
+    font-size: 1.1em;
+}
+
+.totais strong {
+    color: #d32f2f;
+    font-size: 1.2em;
+}
+
+.botoes-acao {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-voltar, .btn-finalizar {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-voltar {
+    background: #666;
+    color: white;
+}
+
+.btn-voltar:hover {
+    background: #555;
+}
+
+.btn-finalizar {
+    background: #d32f2f;
+    color: white;
+}
+
+.btn-finalizar:hover {
+    background: #b71c1c;
+}
+
+#resumoBebidas ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#resumoBebidas li {
+    padding: 5px 0;
+    border-bottom: 1px solid #ddd;
+}
+</style>

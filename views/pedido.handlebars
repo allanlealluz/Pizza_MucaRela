@@ -16,17 +16,125 @@
     </p>
 
     <hr>
-    <h4>Total: <span class="text-success">R$ {{total}}</span></h4>
+    <h4>Subtotal Pizza: <span class="text-success">R$ {{total}}</span></h4>
   </div>
 </div>
 
-<a href="/" class="btn btn-outline-secondary">Voltar ao Início</a>
-<a href="/cardapio" class="btn btn-outline-primary">Fazer Outro Pedido</a>
-<button class="btn btn-success float-end" onclick="finalizar()">Finalizar Pedido</button>
+<!-- Nova seção para adicionar bebidas -->
+<div class="card mb-4 shadow border-info">
+  <div class="card-body text-center">
+    <h5 class="card-title text-info">🥤 Que tal uma bebida gelada?</h5>
+    <p class="card-text">Complete seu pedido com nossas deliciosas bebidas!</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <button class="btn btn-info" onclick="adicionarBebidas()">
+        <i class="fas fa-plus"></i> Adicionar Bebidas
+      </button>
+      <button class="btn btn-outline-info" onclick="verBebidas()">
+        <i class="fas fa-eye"></i> Ver Cardápio de Bebidas
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Botões de navegação -->
+<div class="d-flex justify-content-between flex-wrap gap-2">
+  <div>
+    <a href="/" class="btn btn-outline-secondary">
+      <i class="fas fa-home"></i> Voltar ao Início
+    </a>
+    <a href="/cardapio" class="btn btn-outline-primary">
+      <i class="fas fa-pizza-slice"></i> Fazer Outro Pedido
+    </a>
+  </div>
+  <div>
+    <button class="btn btn-success" onclick="finalizar()">
+      <i class="fas fa-check"></i> Finalizar Só Pizza
+    </button>
+  </div>
+</div>
+
+<!-- Estilos adicionais -->
+<style>
+.card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.border-info {
+  border-color: #17a2b8 !important;
+  border-width: 2px;
+}
+
+.gap-3 {
+  gap: 1rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .d-flex.justify-content-between {
+    flex-direction: column;
+  }
+  
+  .flex-wrap {
+    justify-content: center !important;
+  }
+}
+</style>
 
 <script>
-  function finalizar() {
-    alert("✅ Pedido enviado para a cozinha! Obrigado por escolher a Pizzaria MucaRoela!");
-    window.location.href = "/";
+  // Salvar dados da pizza no localStorage para usar na página de bebidas
+  const dadosPizza = {
+    sabores: [{{#each sabores}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
+    tamanho: "{{tamanho}}",
+    borda: "{{borda}}",
+    adicionais: [{{#each adicionais}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
+    total: "{{total}}"
+  };
+  
+  localStorage.setItem('dadosPizza', JSON.stringify(dadosPizza));
+
+  function adicionarBebidas() {
+    // Redirecionar para a página de bebidas mantendo os dados da pizza
+    window.location.href = "/bebidas";
   }
+  
+  function verBebidas() {
+    // Abrir bebidas em nova aba para consultar
+    window.open("/bebidas", "_blank");
+  }
+
+  function finalizar() {
+    // Confirmar se quer finalizar só com pizza
+    const confirmar = confirm("🍕 Finalizar pedido apenas com a pizza?\n\nClique 'OK' para confirmar ou 'Cancelar' para adicionar bebidas.");
+    
+    if (confirmar) {
+      alert("✅ Pedido enviado para a cozinha! Obrigado por escolher a Pizzaria MucaRoela!");
+      localStorage.removeItem('dadosPizza'); // Limpar dados salvos
+      window.location.href = "/";
+    }
+  }
+  
+  // Adicionar efeitos visuais
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animar cards ao carregar
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, 100);
+      }, index * 200);
+    });
+  });
 </script>
