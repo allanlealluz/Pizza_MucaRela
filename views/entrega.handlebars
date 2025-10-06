@@ -1,0 +1,110 @@
+{{!-- ADICIONAR no final do pedido-completo.handlebars, 
+     SUBSTITUINDO a seção de botões de ação existente --}}
+
+{{!-- Botões de Ação - VERSÃO ATUALIZADA --}}
+<div class="acoes-pedido">
+    <button type="button" onclick="voltarParaCardapio()" class="btn-voltar">
+        ← Voltar ao Cardápio
+    </button>
+    <button type="button" onclick="irParaEntrega()" class="btn-continuar">
+        Continuar para Entrega →
+    </button>
+</div>
+
+<script>
+// Salvar dados do pedido para a próxima página
+function irParaEntrega() {
+    // Coletar todos os dados do pedido atual
+    const pedidoData = {
+        tamanho: '{{tamanho}}',
+        borda: '{{borda}}',
+        totalPizza: '{{totalPizza}}',
+        totalBebidas: '{{totalBebidas}}',
+        sabores: [
+            {{#each sabores}}
+                '{{this}}'{{#unless @last}},{{/unless}}
+            {{/each}}
+        ],
+        adicionais: [
+            {{#each adicionais}}
+                '{{this}}'{{#unless @last}},{{/unless}}
+            {{/each}}
+        ],
+        bebidas: [
+            {{#each bebidas}}
+                {{id}}{{#unless @last}},{{/unless}}
+            {{/each}}
+        ],
+        quantidades: [
+            {{#each bebidas}}
+                {{quantidade}}{{#unless @last}},{{/unless}}
+            {{/each}}
+        ]
+    };
+    
+    // Salvar no localStorage como backup
+    localStorage.setItem('pedidoAtual', JSON.stringify(pedidoData));
+    
+    // Construir URL com query params para garantir que os dados sejam passados
+    const params = new URLSearchParams();
+    params.append('tamanho', pedidoData.tamanho);
+    params.append('borda', pedidoData.borda);
+    params.append('totalPizza', pedidoData.totalPizza);
+    params.append('totalBebidas', pedidoData.totalBebidas);
+    
+    pedidoData.sabores.forEach(sabor => {
+        params.append('sabores', sabor);
+    });
+    
+    pedidoData.adicionais.forEach(adicional => {
+        params.append('adicionais', adicional);
+    });
+    
+    pedidoData.bebidas.forEach((bebida, index) => {
+        params.append('bebidas', bebida);
+        params.append('quantidades', pedidoData.quantidades[index]);
+    });
+    
+    // Redirecionar para página de entrega
+    window.location.href = '/entrega?' + params.toString();
+}
+
+function voltarParaCardapio() {
+    if (confirm('Deseja voltar ao cardápio? Você poderá adicionar mais itens ao pedido.')) {
+        window.location.href = '/bebidas';
+    }
+}
+
+// Remover as funções antigas de impressão e novo pedido se existirem
+</script>
+
+{{!-- ADICIONAR ESTE CSS para o novo botão --}}
+<style>
+.btn-voltar {
+    background: #757575;
+    color: white;
+}
+
+.btn-voltar:hover {
+    background: #616161;
+    transform: translateY(-2px);
+}
+
+.btn-continuar {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-continuar:hover {
+    background: linear-gradient(135deg, #388e3c, #4caf50);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+</style>

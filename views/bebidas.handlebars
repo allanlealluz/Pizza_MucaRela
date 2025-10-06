@@ -1,9 +1,8 @@
-{{!-- bebidas.handlebars --}}
 <div class="container">
     <h1>Bebidas</h1>
     <p>Escolha suas bebidas para acompanhar a pizza:</p>
 
-    <form id="formBebidas" action="/pedido-completo" method="POST">
+    <form id="formBebidas" action="/finalizar-pedido" method="POST">
         {{!-- Campos ocultos para dados da pizza (serão preenchidos via JavaScript) --}}
         <div id="dadosPizzaHidden"></div>
 
@@ -52,7 +51,65 @@
             <div class="totais">
                 <p>Total Bebidas: R$ <span id="totalBebidas">0.00</span></p>
                 <p>Total Pizza: R$ <span id="totalPizza">0.00</span></p>
+                <p>Taxa de Entrega: R$ <span id="taxaEntregaDisplay">0.00</span></p>
                 <p><strong>Total Geral: R$ <span id="totalGeral">0.00</span></strong></p>
+            </div>
+        </div>
+
+        {{!-- Seleção do Tipo de Entrega --}}
+        <div class="secao-entrega">
+            <h2>Opções de Entrega</h2>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="tipoEntrega" id="retirada" value="retirada" checked onchange="toggleEntregaFields()">
+                <label class="form-check-label" for="retirada">Retirada no Local</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="tipoEntrega" id="entrega" value="entrega" onchange="toggleEntregaFields()">
+                <label class="form-check-label" for="entrega">Entrega</label>
+            </div>
+
+            <div id="camposEntrega" style="display: none; margin-top: 20px;">
+                <h3>Dados para Entrega</h3>
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome Completo:</label>
+                    <input type="text" class="form-control" id="nome" name="nome" required>
+                </div>
+                <div class="mb-3">
+                    <label for="telefone" class="form-label">Telefone:</label>
+                    <input type="tel" class="form-control" id="telefone" name="telefone" placeholder="(XX) XXXXX-XXXX" required>
+                </div>
+                <div class="mb-3">
+                    <label for="cep" class="form-label">CEP:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="cep" name="cep" placeholder="XXXXX-XXX" maxlength="9" onkeyup="formatarCEP(this)" required>
+                        <button class="btn btn-outline-secondary" type="button" id="btnBuscarCep">Buscar CEP</button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="logradouro" class="form-label">Logradouro:</label>
+                    <input type="text" class="form-control" id="logradouro" name="logradouro" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="numero" class="form-label">Número:</label>
+                    <input type="text" class="form-control" id="numero" name="numero" required>
+                </div>
+                <div class="mb-3">
+                    <label for="complemento" class="form-label">Complemento:</label>
+                    <input type="text" class="form-control" id="complemento" name="complemento">
+                </div>
+                <div class="mb-3">
+                    <label for="bairro" class="form-label">Bairro:</label>
+                    <input type="text" class="form-control" id="bairro" name="bairro" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="cidade" class="form-label">Cidade:</label>
+                    <input type="text" class="form-control" id="cidade" name="cidade" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="estado" class="form-label">Estado:</label>
+                    <input type="text" class="form-control" id="estado" name="estado" readonly>
+                </div>
+                <input type="hidden" name="taxaEntrega" id="inputTaxaEntrega" value="0.00">
             </div>
         </div>
 
@@ -80,15 +137,17 @@ const bebidas = [
     {{/each}}
 ];
 
+let currentTaxaEntrega = 0;
+
 function toggleBebida(checkbox) {
-    const quantidadeContainer = checkbox.closest('.bebida-controles').querySelector('.quantidade-container');
-    const quantidadeInput = quantidadeContainer.querySelector('input[type="number"]');
+    const quantidadeContainer = checkbox.closest(".bebida-controles").querySelector(".quantidade-container");
+    const quantidadeInput = quantidadeContainer.querySelector("input[type=\"number\"]");
     
     if (checkbox.checked) {
-        quantidadeContainer.style.display = 'block';
+        quantidadeContainer.style.display = "block";
         quantidadeInput.disabled = false;
     } else {
-        quantidadeContainer.style.display = 'none';
+        quantidadeContainer.style.display = "none";
         quantidadeInput.disabled = true;
         quantidadeInput.value = 1;
     }
@@ -98,86 +157,171 @@ function toggleBebida(checkbox) {
 }
 
 function calcularTotal() {
-    const checkboxes = document.querySelectorAll('input[name="bebidas"]:checked');
+    const checkboxes = document.querySelectorAll("input[name=\"bebidas\"]:checked");
     let totalBebidas = 0;
     
     checkboxes.forEach(checkbox => {
         const preco = parseFloat(checkbox.dataset.preco);
-        const quantidadeInput = checkbox.closest('.bebida-controles').querySelector('input[type="number"]');
+        const quantidadeInput = checkbox.closest(".bebida-controles").querySelector("input[type=\"number\"]");
         const quantidade = parseInt(quantidadeInput.value) || 1;
         totalBebidas += preco * quantidade;
     });
     
-    const totalPizza = parseFloat(document.getElementById('totalPizza').textContent) || 0;
-    const totalGeral = totalPizza + totalBebidas;
+    const totalPizza = parseFloat(document.getElementById("totalPizza").textContent) || 0;
+    let totalGeral = totalPizza + totalBebidas + currentTaxaEntrega;
     
     // Atualizar interface
-    document.getElementById('totalBebidas').textContent = totalBebidas.toFixed(2);
-    document.getElementById('totalGeral').textContent = totalGeral.toFixed(2);
+    document.getElementById("totalBebidas").textContent = totalBebidas.toFixed(2);
+    document.getElementById("totalGeral").textContent = totalGeral.toFixed(2);
+    document.getElementById("taxaEntregaDisplay").textContent = currentTaxaEntrega.toFixed(2);
     
     // Atualizar campos ocultos
-    document.getElementById('inputTotalBebidas').value = totalBebidas.toFixed(2);
-    document.getElementById('inputTotalGeral').value = totalGeral.toFixed(2);
+    document.getElementById("inputTotalBebidas").value = totalBebidas.toFixed(2);
+    document.getElementById("inputTotalGeral").value = totalGeral.toFixed(2);
+    document.getElementById("inputTaxaEntrega").value = currentTaxaEntrega.toFixed(2);
 }
 
 function atualizarResumo() {
-    const checkboxes = document.querySelectorAll('input[name="bebidas"]:checked');
-    const resumoDiv = document.getElementById('resumoBebidas');
+    const checkboxes = document.querySelectorAll("input[name=\"bebidas\"]:checked");
+    const resumoDiv = document.getElementById("resumoBebidas");
     
     if (checkboxes.length === 0) {
-        resumoDiv.innerHTML = '<p>Nenhuma bebida selecionada</p>';
+        resumoDiv.innerHTML = "<p>Nenhuma bebida selecionada</p>";
         return;
     }
     
-    let resumoHTML = '<ul>';
+    let resumoHTML = "<ul>";
     checkboxes.forEach(checkbox => {
         const nome = checkbox.dataset.nome;
         const preco = parseFloat(checkbox.dataset.preco);
-        const quantidadeInput = checkbox.closest('.bebida-controles').querySelector('input[type="number"]');
+        const quantidadeInput = checkbox.closest(".bebida-controles").querySelector("input[type=\"number\"]");
         const quantidade = parseInt(quantidadeInput.value) || 1;
         const subtotal = (preco * quantidade).toFixed(2);
         
         resumoHTML += `<li>${quantidade}x ${nome} - R$ ${subtotal}</li>`;
     });
-    resumoHTML += '</ul>';
+    resumoHTML += "</ul>";
     
     resumoDiv.innerHTML = resumoHTML;
 }
 
+function toggleEntregaFields() {
+    const camposEntrega = document.getElementById("camposEntrega");
+    const tipoEntrega = document.querySelector("input[name=\"tipoEntrega\"]:checked").value;
+
+    if (tipoEntrega === "entrega") {
+        camposEntrega.style.display = "block";
+        document.getElementById("nome").setAttribute("required", "true");
+        document.getElementById("telefone").setAttribute("required", "true");
+        document.getElementById("cep").setAttribute("required", "true");
+        document.getElementById("numero").setAttribute("required", "true");
+    } else {
+        camposEntrega.style.display = "none";
+        document.getElementById("nome").removeAttribute("required");
+        document.getElementById("telefone").removeAttribute("required");
+        document.getElementById("cep").removeAttribute("required");
+        document.getElementById("numero").removeAttribute("required");
+        currentTaxaEntrega = 0;
+        calcularTotal();
+        limparCamposEndereco();
+    }
+}
+
+function formatarCEP(input) {
+    let value = input.value.replace(/\D/g, "");
+    if (value.length > 5) {
+        value = value.substring(0, 5) + "-" + value.substring(5, 8);
+    }
+    input.value = value;
+}
+
+async function buscarCEP() {
+    const cepInput = document.getElementById("cep");
+    const cep = cepInput.value.replace(/\D/g, "");
+
+    if (cep.length !== 8) {
+        alert("Por favor, digite um CEP válido com 8 dígitos.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/endereco/${cep}`);
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+            limparCamposEndereco();
+            currentTaxaEntrega = 0;
+        } else {
+            document.getElementById("logradouro").value = data.logradouro || "";
+            document.getElementById("bairro").value = data.bairro || "";
+            document.getElementById("cidade").value = data.localidade || "";
+            document.getElementById("estado").value = data.uf || "";
+            currentTaxaEntrega = parseFloat(data.taxaEntrega) || 0;
+        }
+    } catch (error) {
+        console.error("Erro ao buscar CEP:", error);
+        alert("Erro ao buscar CEP. Tente novamente mais tarde.");
+        limparCamposEndereco();
+        currentTaxaEntrega = 0;
+    }
+    calcularTotal();
+}
+
+function limparCamposEndereco() {
+    document.getElementById("logradouro").value = "";
+    document.getElementById("numero").value = "";
+    document.getElementById("complemento").value = "";
+    document.getElementById("bairro").value = "";
+    document.getElementById("cidade").value = "";
+    document.getElementById("estado").value = "";
+}
+
 // Event listeners para recalcular quando quantidade mudar
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function() {
     // Carregar dados da pizza do localStorage
     carregarDadosPizza();
     
-    const quantidadeInputs = document.querySelectorAll('input[type="number"][name="quantidades"]');
+    const quantidadeInputs = document.querySelectorAll("input[type=\"number\"][name=\"quantidades\"]");
     quantidadeInputs.forEach(input => {
-        input.addEventListener('change', function() {
+        input.addEventListener("change", function() {
             calcularTotal();
             atualizarResumo();
         });
     });
+
+    document.getElementById("btnBuscarCep").addEventListener("click", buscarCEP);
+    document.getElementById("cep").addEventListener("blur", buscarCEP); // Busca ao sair do campo CEP
+    document.getElementById("cep").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            buscarCEP();
+        }
+    });
+
+    toggleEntregaFields(); // Inicializa o estado dos campos de entrega
 });
 
 function carregarDadosPizza() {
-    const dadosPizza = localStorage.getItem('dadosPizza');
+    const dadosPizza = localStorage.getItem("dadosPizza");
     
     if (!dadosPizza) {
-        alert('Erro: Dados da pizza não encontrados. Redirecionando para o cardápio.');
-        window.location.href = '/cardapio';
+        alert("Erro: Dados da pizza não encontrados. Redirecionando para o cardápio.");
+        window.location.href = "/cardapio";
         return;
     }
     
     const pizza = JSON.parse(dadosPizza);
     
     // Criar campos ocultos para os dados da pizza
-    const container = document.getElementById('dadosPizzaHidden');
+    const container = document.getElementById("dadosPizzaHidden");
     
     // Sabores
     if (pizza.sabores && pizza.sabores.length > 0) {
         pizza.sabores.forEach(sabor => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'sabores';
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "sabores[]"; // Corrigido para array
             input.value = sabor;
             container.appendChild(input);
         });
@@ -185,28 +329,28 @@ function carregarDadosPizza() {
     
     // Tamanho
     if (pizza.tamanho) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'tamanho';
-        input.value = pizza.tamanho;
-        container.appendChild(input);
+        const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "tamanho";
+            input.value = pizza.tamanho;
+            container.appendChild(input);
     }
     
     // Borda
     if (pizza.borda) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'borda';
-        input.value = pizza.borda;
-        container.appendChild(input);
+        const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "borda";
+            input.value = pizza.borda;
+            container.appendChild(input);
     }
     
     // Adicionais
     if (pizza.adicionais && pizza.adicionais.length > 0) {
         pizza.adicionais.forEach(adicional => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'adicionais';
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "adicionais[]"; // Corrigido para array
             input.value = adicional;
             container.appendChild(input);
         });
@@ -214,17 +358,18 @@ function carregarDadosPizza() {
     
     // Total da pizza
     if (pizza.total) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'totalPizza';
-        input.value = pizza.total;
-        container.appendChild(input);
+        const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "totalPizza";
+            input.value = pizza.total;
+            container.appendChild(input);
         
         // Atualizar interface
-        document.getElementById('totalPizza').textContent = pizza.total;
-        document.getElementById('totalGeral').textContent = pizza.total;
-        document.getElementById('inputTotalGeral').value = pizza.total;
+        document.getElementById("totalPizza").textContent = pizza.total;
+        document.getElementById("totalGeral").textContent = pizza.total;
+        document.getElementById("inputTotalGeral").value = pizza.total;
     }
+    calcularTotal(); // Recalcular total após carregar dados da pizza
 }
 </script>
 
@@ -356,5 +501,46 @@ function carregarDadosPizza() {
 #resumoBebidas li {
     padding: 5px 0;
     border-bottom: 1px solid #ddd;
+}
+
+.secao-entrega {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.secao-entrega h2 {
+    color: #d32f2f;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #d32f2f;
+    padding-bottom: 5px;
+}
+
+.secao-entrega h3 {
+    color: #333;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.form-check {
+    margin-bottom: 10px;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.input-group {
+    display: flex;
+}
+
+.input-group .form-control {
+    flex: 1;
+}
+
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 </style>

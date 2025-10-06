@@ -1,118 +1,227 @@
-{{!-- pedido-completo.handlebars --}}
-<div class="container">
-    <div class="cabecalho-pedido">
-        <h1>🍕 Pedido Confirmado!</h1>
-        <p class="status-pedido">Seu pedido foi recebido com sucesso</p>
+{{!-- pedido-final.handlebars --}}
+<div class="container-confirmacao">
+    <div class="cabecalho-sucesso">
+        <div class="icone-sucesso">✓</div>
+        <h1>Pedido Confirmado!</h1>
+        <p class="numero-pedido">Pedido #{{timestamp}}</p>
+        <p class="mensagem">Seu pedido foi recebido com sucesso e já está sendo preparado! 🍕</p>
     </div>
 
-    <div class="detalhes-pedido">
-        {{!-- Seção da Pizza --}}
-        <div class="secao-pizza">
-            <h2>🍕 Sua Pizza</h2>
-            <div class="item-pedido">
-                <div class="info-item">
-                    <h3>Tamanho:</h3>
-                    <p>{{tamanho}}</p>
+    <div class="conteudo-pedido">
+        {{!-- Informações do Cliente e Entrega --}}
+        <div class="secao-info">
+            <h2>👤 Informações do Cliente</h2>
+            <div class="info-box">
+                <div class="info-linha">
+                    <strong>Nome:</strong>
+                    <span>{{dadosEntrega.nome}}</span>
+                </div>
+                <div class="info-linha">
+                    <strong>Telefone:</strong>
+                    <span>{{dadosEntrega.telefone}}</span>
                 </div>
                 
-                <div class="info-item">
-                    <h3>Sabores:</h3>
-                    {{#if sabores}}
-                        <ul class="lista-sabores">
-                            {{#each sabores}}
-                                <li>{{this}}</li>
-                            {{/each}}
-                        </ul>
-                    {{else}}
-                        <p>Nenhum sabor selecionado</p>
-                    {{/if}}
-                </div>
-
-                <div class="info-item">
-                    <h3>Borda:</h3>
-                    <p>{{borda}}</p>
-                </div>
-
-                {{#if adicionais}}
-                    <div class="info-item">
-                        <h3>Adicionais:</h3>
-                        <ul class="lista-adicionais">
-                            {{#each adicionais}}
-                                <li>{{this}}</li>
-                            {{/each}}
-                        </ul>
+                {{#if (eq tipoEntrega "entrega")}}
+                    <div class="info-linha tipo-entrega">
+                        <span class="badge-entrega">🚚 Entrega</span>
+                    </div>
+                    
+                    <div class="endereco-completo">
+                        <h3>📍 Endereço de Entrega:</h3>
+                        <p>{{dadosEntrega.endereco.logradouro}}, {{dadosEntrega.endereco.numero}}
+                        {{#if dadosEntrega.endereco.complemento}} - {{dadosEntrega.endereco.complemento}}{{/if}}</p>
+                        <p>{{dadosEntrega.endereco.bairro}} - {{dadosEntrega.endereco.cidade}}/{{dadosEntrega.endereco.estado}}</p>
+                        <p>CEP: {{dadosEntrega.endereco.cep}}</p>
+                    </div>
+                {{else}}
+                    <div class="info-linha tipo-entrega">
+                        <span class="badge-retirada">🏪 Retirada no Local</span>
+                    </div>
+                    <div class="endereco-completo">
+                        <h3>📍 Local de Retirada:</h3>
+                        <p><strong>Pizzaria MucaRoela</strong></p>
+                        <p>Rua das Pizzas, 123 - Centro</p>
+                        <p>Horário: 18h às 23h</p>
                     </div>
                 {{/if}}
+            </div>
+        </div>
 
-                <div class="total-item">
-                    <strong>Total Pizza: R$ {{totalPizza}}</strong>
+        {{!-- Detalhes da Pizza --}}
+        <div class="secao-pizza">
+            <h2>🍕 Sua Pizza</h2>
+            <div class="detalhes-box">
+                <div class="item-detalhe">
+                    <span class="label">Tamanho:</span>
+                    <span class="valor">{{tamanho}}</span>
+                </div>
+                
+                <div class="item-detalhe">
+                    <span class="label">Borda:</span>
+                    <span class="valor">{{borda}}</span>
+                </div>
+                
+                <div class="item-detalhe">
+                    <span class="label">Sabores:</span>
+                    <div class="lista-items">
+                        {{#each sabores}}
+                            <span class="badge-item">{{this}}</span>
+                        {{/each}}
+                    </div>
+                </div>
+                
+                {{#if adicionais}}
+                    <div class="item-detalhe">
+                        <span class="label">Adicionais:</span>
+                        <div class="lista-items">
+                            {{#each adicionais}}
+                                <span class="badge-item adicional">{{this}}</span>
+                            {{/each}}
+                        </div>
+                    </div>
+                {{/if}}
+                
+                <div class="subtotal-linha">
+                    <span>Subtotal Pizza:</span>
+                    <span class="valor-destaque">R$ {{totalPizza}}</span>
                 </div>
             </div>
         </div>
 
-        {{!-- Seção das Bebidas --}}
+        {{!-- Bebidas --}}
         {{#if bebidas}}
             <div class="secao-bebidas">
-                <h2>🥤 Suas Bebidas</h2>
-                <div class="lista-bebidas">
+                <h2>🥤 Bebidas</h2>
+                <div class="detalhes-box">
                     {{#each bebidas}}
-                        <div class="bebida-item">
+                        <div class="bebida-linha">
                             <div class="bebida-info">
-                                <span class="quantidade">{{quantidade}}x</span>
-                                <span class="nome">{{nome}}</span>
-                                <span class="preco-unitario">(R$ {{preco}} cada)</span>
+                                <span class="qtd-badge">{{quantidade}}x</span>
+                                <span class="bebida-nome">{{nome}}</span>
+                                <span class="preco-unit">(R$ {{preco}} cada)</span>
                             </div>
-                            <div class="bebida-subtotal">
-                                R$ {{subtotal}}
-                            </div>
+                            <span class="bebida-total">R$ {{subtotal}}</span>
                         </div>
                     {{/each}}
+                    
+                    <div class="subtotal-linha">
+                        <span>Subtotal Bebidas:</span>
+                        <span class="valor-destaque">R$ {{totalBebidas}}</span>
+                    </div>
                 </div>
-                <div class="total-bebidas">
-                    <strong>Total Bebidas: R$ {{totalBebidas}}</strong>
-                </div>
-            </div>
-        {{else}}
-            <div class="secao-bebidas">
-                <h2>🥤 Bebidas</h2>
-                <p class="sem-bebidas">Nenhuma bebida selecionada</p>
             </div>
         {{/if}}
 
-        {{!-- Total Geral --}}
-        <div class="total-geral">
-            <h2>💰 Total do Pedido: R$ {{totalGeral}}</h2>
+        {{!-- Resumo Financeiro --}}
+        <div class="secao-total">
+            <h2>💰 Resumo do Pagamento</h2>
+            <div class="resumo-box">
+                <div class="resumo-linha">
+                    <span>Subtotal Pizza:</span>
+                    <span>R$ {{totalPizza}}</span>
+                </div>
+                
+                {{#if bebidas}}
+                    <div class="resumo-linha">
+                        <span>Subtotal Bebidas:</span>
+                        <span>R$ {{totalBebidas}}</span>
+                    </div>
+                {{/if}}
+                
+                {{#if (eq tipoEntrega "entrega")}}
+                    <div class="resumo-linha taxa">
+                        <span>Taxa de Entrega:</span>
+                        <span>R$ {{dadosEntrega.taxaEntrega}}</span>
+                    </div>
+                {{/if}}
+                
+                <div class="resumo-linha total">
+                    <span>Total Geral:</span>
+                    <span>R$ {{totalGeral}}</span>
+                </div>
+            </div>
+        </div>
+
+        {{!-- Próximos Passos --}}
+        <div class="secao-passos">
+            <h2>📋 Próximos Passos</h2>
+            <div class="timeline">
+                <div class="passo-timeline">
+                    <div class="passo-numero ativo">1</div>
+                    <div class="passo-conteudo">
+                        <h3>Pedido Confirmado</h3>
+                        <p>✓ Recebemos seu pedido com sucesso!</p>
+                    </div>
+                </div>
+                
+                <div class="passo-timeline">
+                    <div class="passo-numero">2</div>
+                    <div class="passo-conteudo">
+                        <h3>Em Preparo</h3>
+                        <p>Nossa equipe já começou a preparar sua pizza</p>
+                        <p class="tempo">⏱️ Tempo estimado: 30-45 minutos</p>
+                    </div>
+                </div>
+                
+                {{#if (eq tipoEntrega "entrega")}}
+                    <div class="passo-timeline">
+                        <div class="passo-numero">3</div>
+                        <div class="passo-conteudo">
+                            <h3>Saiu para Entrega</h3>
+                            <p>Seu pedido está a caminho!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="passo-timeline">
+                        <div class="passo-numero">4</div>
+                        <div class="passo-conteudo">
+                            <h3>Entregue</h3>
+                            <p>Bom apetite! 🍕</p>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="passo-timeline">
+                        <div class="passo-numero">3</div>
+                        <div class="passo-conteudo">
+                            <h3>Pronto para Retirada</h3>
+                            <p>Você será notificado quando estiver pronto!</p>
+                        </div>
+                    </div>
+                {{/if}}
+            </div>
+        </div>
+
+        {{!-- Alerta Importante --}}
+        <div class="alerta-contato">
+            <div class="icone-alerta">📞</div>
+            <div class="texto-alerta">
+                <h3>Atenção!</h3>
+                <p>Entraremos em contato através do telefone <strong>{{dadosEntrega.telefone}}</strong> para confirmar seu pedido e informar sobre a {{#if (eq tipoEntrega "entrega")}}entrega{{else}}retirada{{/if}}.</p>
+            </div>
         </div>
     </div>
 
-    {{!-- Informações de Entrega/Retirada --}}
-    <div class="info-entrega">
-        <h3>📍 Próximos Passos</h3>
-        <div class="passos">
-            <div class="passo">
-                <span class="numero">1</span>
-                <p>Seu pedido foi registrado com sucesso</p>
-            </div>
-            <div class="passo">
-                <span class="numero">2</span>
-                <p>Tempo estimado de preparo: 30-45 minutos</p>
-            </div>
-            <div class="passo">
-                <span class="numero">3</span>
-                <p>Entraremos em contato para confirmar os dados de entrega</p>
-            </div>
-        </div>
-    </div>
-
-    {{!-- Resumo para Impressão --}}
-    <div class="resumo-impressao" id="resumoImpressao">
-        <div class="cabecalho-impressao">
-            <h2>🍕 Pizzaria MucaRoela</h2>
+    {{!-- Comprovante para Impressão --}}
+    <div class="comprovante-impressao" id="comprovanteImpressao">
+        <div class="header-impressao">
+            <h2>🍕 PIZZARIA MUCAROELA</h2>
+            <p>Comprovante de Pedido</p>
             <p>Pedido #{{timestamp}}</p>
+            <p>{{dadosEntrega.nome}} - {{dadosEntrega.telefone}}</p>
             <hr>
         </div>
         
-        <div class="detalhes-impressao">
+        <div class="corpo-impressao">
+            <h3>TIPO: {{#if (eq tipoEntrega "entrega")}}ENTREGA{{else}}RETIRADA{{/if}}</h3>
+            
+            {{#if (eq tipoEntrega "entrega")}}
+                <p><strong>Endereço:</strong></p>
+                <p>{{dadosEntrega.endereco.logradouro}}, {{dadosEntrega.endereco.numero}}</p>
+                <p>{{dadosEntrega.endereco.bairro}} - {{dadosEntrega.endereco.cidade}}/{{dadosEntrega.endereco.estado}}</p>
+                <p>CEP: {{dadosEntrega.endereco.cep}}</p>
+            {{/if}}
+            
+            <hr>
             <h3>PIZZA:</h3>
             <p>Tamanho: {{tamanho}}</p>
             <p>Borda: {{borda}}</p>
@@ -120,7 +229,7 @@
             {{#if adicionais}}
                 <p>Adicionais: {{#each adicionais}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
             {{/if}}
-            <p>Subtotal Pizza: R$ {{totalPizza}}</p>
+            <p>Subtotal: R$ {{totalPizza}}</p>
             
             {{#if bebidas}}
                 <hr>
@@ -128,359 +237,539 @@
                 {{#each bebidas}}
                     <p>{{quantidade}}x {{nome}} - R$ {{subtotal}}</p>
                 {{/each}}
-                <p>Subtotal Bebidas: R$ {{totalBebidas}}</p>
+                <p>Subtotal: R$ {{totalBebidas}}</p>
+            {{/if}}
+            
+            {{#if (eq tipoEntrega "entrega")}}
+                <hr>
+                <p>Taxa de Entrega: R$ {{dadosEntrega.taxaEntrega}}</p>
             {{/if}}
             
             <hr>
             <h3>TOTAL: R$ {{totalGeral}}</h3>
+            <hr>
+            <p style="text-align: center; margin-top: 20px;">Obrigado pela preferência!</p>
         </div>
     </div>
 
     {{!-- Botões de Ação --}}
-    <div class="acoes-pedido">
-        <button onclick="imprimirPedido()" class="btn-imprimir">🖨️ Imprimir Pedido</button>
-        <button onclick="novoPedido()" class="btn-novo-pedido">🍕 Fazer Novo Pedido</button>
-        <button onclick="window.location.href='/'" class="btn-inicio">🏠 Voltar ao Início</button>
+    <div class="acoes-finais">
+        <button onclick="imprimirComprovante()" class="btn-acao imprimir">
+            🖨️ Imprimir Comprovante
+        </button>
+        <button onclick="novoPedido()" class="btn-acao novo">
+            🍕 Fazer Novo Pedido
+        </button>
+        <button onclick="window.location.href='/'" class="btn-acao inicio">
+            🏠 Voltar ao Início
+        </button>
     </div>
 </div>
 
 <script>
-function imprimirPedido() {
-    const resumo = document.getElementById('resumoImpressao').innerHTML;
-    const novaJanela = window.open('', '_blank');
-    novaJanela.document.write(`
+function imprimirComprovante() {
+    const comprovante = document.getElementById('comprovanteImpressao').innerHTML;
+    const janelaImpressao = window.open('', '_blank');
+    janelaImpressao.document.write(`
         <html>
             <head>
-                <title>Pedido - Pizzaria MucaRoela</title>
+                <title>Comprovante - Pedido #{{timestamp}}</title>
                 <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    .cabecalho-impressao { text-align: center; margin-bottom: 20px; }
-                    .cabecalho-impressao h2 { margin: 0; color: #d32f2f; }
-                    hr { border: 1px solid #ccc; margin: 10px 0; }
-                    h3 { color: #333; margin: 15px 0 5px 0; }
-                    p { margin: 5px 0; }
+                    body {
+                        font-family: 'Courier New', monospace;
+                        max-width: 300px;
+                        margin: 20px auto;
+                        font-size: 12px;
+                    }
+                    .header-impressao {
+                        text-align: center;
+                        margin-bottom: 15px;
+                    }
+                    .header-impressao h2 {
+                        margin: 5px 0;
+                        font-size: 16px;
+                    }
+                    .header-impressao p {
+                        margin: 3px 0;
+                    }
+                    hr {
+                        border: none;
+                        border-top: 1px dashed #000;
+                        margin: 10px 0;
+                    }
+                    h3 {
+                        margin: 10px 0 5px 0;
+                        font-size: 13px;
+                    }
+                    p {
+                        margin: 3px 0;
+                    }
+                    @media print {
+                        body {
+                            margin: 0;
+                        }
+                    }
                 </style>
             </head>
             <body>
-                ${resumo}
+                ${comprovante}
             </body>
         </html>
     `);
-    novaJanela.document.close();
-    novaJanela.print();
+    janelaImpressao.document.close();
+    janelaImpressao.print();
 }
 
 function novoPedido() {
-    if (confirm('Deseja fazer um novo pedido? Isso irá limpar o pedido atual.')) {
+    if (confirm('Deseja fazer um novo pedido?')) {
+        localStorage.removeItem('pedidoAtual');
         window.location.href = '/';
     }
 }
 
-// Adicionar timestamp para o número do pedido
-document.addEventListener('DOMContentLoaded', function() {
-    const timestamp = new Date().getTime();
-    const timestampElements = document.querySelectorAll('#resumoImpressao .cabecalho-impressao p');
-    if (timestampElements.length > 0) {
-        timestampElements[0].textContent = `Pedido #${timestamp}`;
-    }
-});
+// Limpar localStorage após exibir confirmação
+localStorage.removeItem('pedidoAtual');
 </script>
 
 <style>
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-}
-
-.cabecalho-pedido {
-    text-align: center;
-    background: linear-gradient(135deg, #d32f2f, #f44336);
-    color: white;
-    padding: 30px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-}
-
-.cabecalho-pedido h1 {
+* {
     margin: 0;
-    font-size: 2.5em;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.status-pedido {
-    margin: 10px 0 0 0;
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px 10px;
+}
+
+.container-confirmacao {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.cabecalho-sucesso {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: white;
+    text-align: center;
+    padding: 40px 20px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+}
+
+.icone-sucesso {
+    width: 80px;
+    height: 80px;
+    background: white;
+    color: #4caf50;
+    font-size: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.cabecalho-sucesso h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.numero-pedido {
     font-size: 1.2em;
     opacity: 0.9;
+    margin-bottom: 10px;
+    font-weight: 500;
 }
 
-.detalhes-pedido {
-    background: #f9f9f9;
-    border-radius: 10px;
-    padding: 30px;
-    margin-bottom: 30px;
+.mensagem {
+    font-size: 1.1em;
+    opacity: 0.95;
 }
 
-.secao-pizza, .secao-bebidas {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #eee;
+.conteudo-pedido {
+    display: grid;
+    gap: 25px;
 }
 
-.secao-pizza h2, .secao-bebidas h2 {
+.secao-info, .secao-pizza, .secao-bebidas, .secao-total, .secao-passos {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.secao-info h2, .secao-pizza h2, .secao-bebidas h2, .secao-total h2, .secao-passos h2 {
     color: #d32f2f;
     margin-bottom: 20px;
-    font-size: 1.8em;
+    font-size: 1.5em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.item-pedido {
-    background: white;
+.info-box, .detalhes-box, .resumo-box {
+    background: #f8f9fa;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.info-item {
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
+.info-linha {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-.info-item h3 {
-    margin: 0 0 5px 0;
+.info-linha:last-child {
+    border-bottom: none;
+}
+
+.info-linha strong {
     color: #333;
+    min-width: 100px;
+}
+
+.tipo-entrega {
+    justify-content: center;
+    padding: 15px 0;
+}
+
+.badge-entrega, .badge-retirada {
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
     font-size: 1.1em;
 }
 
-.info-item p {
-    margin: 0;
-    color: #666;
-    font-size: 1.1em;
+.badge-entrega {
+    background: #e3f2fd;
+    color: #1976d2;
 }
 
-.lista-sabores, .lista-adicionais {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.lista-sabores li, .lista-adicionais li {
-    background: #e8f5e8;
-    padding: 8px 12px;
-    margin: 5px 0;
-    border-radius: 5px;
-    border-left: 4px solid #4caf50;
-}
-
-.total-item {
+.badge-retirada {
     background: #fff3e0;
-    padding: 15px;
-    border-radius: 5px;
-    border-left: 4px solid #ff9800;
-    font-size: 1.2em;
-    color: #e65100;
+    color: #f57c00;
 }
 
-.lista-bebidas {
+.endereco-completo {
+    margin-top: 15px;
+    padding: 15px;
     background: white;
     border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid #2196f3;
 }
 
-.bebida-item {
+.endereco-completo h3 {
+    color: #1976d2;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.endereco-completo p {
+    color: #555;
+    line-height: 1.6;
+    margin: 5px 0;
+}
+
+.item-detalhe {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 15px;
+}
+
+.item-detalhe:last-of-type {
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 15px;
+}
+
+.item-detalhe .label {
+    font-weight: bold;
+    color: #333;
+    min-width: 100px;
+}
+
+.item-detalhe .valor {
+    color: #666;
+    flex: 1;
+}
+
+.lista-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+}
+
+.badge-item {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    border: 1px solid #c8e6c9;
+}
+
+.badge-item.adicional {
+    background: #fff3e0;
+    color: #e65100;
+    border-color: #ffe0b2;
+}
+
+.subtotal-linha {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: #fff3e0;
+    border-radius: 8px;
+    font-weight: bold;
+    color: #e65100;
+    margin-top: 10px;
+}
+
+.valor-destaque {
+    font-size: 1.2em;
+}
+
+.bebida-linha {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-.bebida-item:last-child {
-    border-bottom: none;
+.bebida-linha:last-of-type {
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 15px;
 }
 
 .bebida-info {
     display: flex;
-    gap: 10px;
     align-items: center;
+    gap: 10px;
+    flex: 1;
 }
 
-.quantidade {
+.qtd-badge {
     background: #d32f2f;
     color: white;
-    padding: 4px 8px;
+    padding: 5px 10px;
     border-radius: 12px;
     font-weight: bold;
     font-size: 0.9em;
 }
 
-.nome {
+.bebida-nome {
     font-weight: 500;
     color: #333;
 }
 
-.preco-unitario {
-    color: #666;
+.preco-unit {
+    color: #999;
     font-size: 0.9em;
 }
 
-.bebida-subtotal {
+.bebida-total {
     font-weight: bold;
     color: #d32f2f;
     font-size: 1.1em;
 }
 
-.total-bebidas {
-    background: #fff3e0;
-    padding: 15px;
-    border-radius: 5px;
-    border-left: 4px solid #ff9800;
-    margin-top: 15px;
-    font-size: 1.2em;
-    color: #e65100;
+.resumo-linha {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1.05em;
 }
 
-.sem-bebidas {
-    color: #666;
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
+.resumo-linha.taxa {
+    color: #ff9800;
+    font-weight: 500;
 }
 
-.total-geral {
-    background: linear-gradient(135deg, #4caf50, #66bb6a);
-    color: white;
-    padding: 25px;
-    border-radius: 10px;
-    text-align: center;
-    margin: 20px 0;
+.resumo-linha.total {
+    border-top: 3px solid #4caf50;
+    border-bottom: none;
+    margin-top: 10px;
+    padding-top: 15px;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #2e7d32;
 }
 
-.total-geral h2 {
-    margin: 0;
-    font-size: 2em;
-}
-
-.info-entrega {
-    background: #e3f2fd;
-    padding: 25px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-}
-
-.info-entrega h3 {
-    color: #1976d2;
-    margin-bottom: 20px;
-    font-size: 1.5em;
-}
-
-.passos {
+.timeline {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
+    position: relative;
+    padding-left: 50px;
 }
 
-.passo {
+.passo-timeline {
     display: flex;
-    align-items: center;
-    gap: 15px;
+    gap: 20px;
+    position: relative;
 }
 
-.numero {
-    background: #1976d2;
-    color: white;
-    width: 30px;
-    height: 30px;
+.passo-timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    bottom: -20px;
+    width: 2px;
+    background: #e0e0e0;
+}
+
+.passo-timeline:last-child::before {
+    display: none;
+}
+
+.passo-numero {
+    width: 40px;
+    height: 40px;
+    background: #e0e0e0;
+    color: #999;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    font-size: 1.1em;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
 }
 
-.passo p {
-    margin: 0;
+.passo-numero.ativo {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: white;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.passo-conteudo {
+    flex: 1;
+    padding-top: 5px;
+}
+
+.passo-conteudo h3 {
     color: #333;
+    margin-bottom: 5px;
     font-size: 1.1em;
 }
 
-.resumo-impressao {
+.passo-conteudo p {
+    color: #666;
+    line-height: 1.5;
+    margin: 3px 0;
+}
+
+.tempo {
+    color: #ff9800 !important;
+    font-weight: 500;
+    margin-top: 5px !important;
+}
+
+.alerta-contato {
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    border-left: 5px solid #ff9800;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-top: 25px;
+}
+
+.icone-alerta {
+    font-size: 3em;
+    flex-shrink: 0;
+}
+
+.texto-alerta h3 {
+    color: #e65100;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.texto-alerta p {
+    color: #555;
+    line-height: 1.6;
+}
+
+.comprovante-impressao {
     display: none;
 }
 
-.acoes-pedido {
+.acoes-finais {
     display: flex;
-    gap: 15px;
     justify-content: center;
+    gap: 15px;
     flex-wrap: wrap;
+    margin-top: 30px;
+    padding-bottom: 30px;
 }
 
-.btn-imprimir, .btn-novo-pedido, .btn-inicio {
-    padding: 12px 24px;
+.btn-acao {
+    padding: 15px 30px;
     border: none;
     border-radius: 25px;
     font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-imprimir {
-    background: #2196f3;
     color: white;
 }
 
-.btn-imprimir:hover {
-    background: #1976d2;
-    transform: translateY(-2px);
+.btn-acao:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
-.btn-novo-pedido {
-    background: #4caf50;
-    color: white;
+.btn-acao.imprimir {
+    background: linear-gradient(135deg, #2196f3, #42a5f5);
 }
 
-.btn-novo-pedido:hover {
-    background: #388e3c;
-    transform: translateY(-2px);
+.btn-acao.novo {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
 }
 
-.btn-inicio {
-    background: #ff9800;
-    color: white;
-}
-
-.btn-inicio:hover {
-    background: #f57c00;
-    transform: translateY(-2px);
+.btn-acao.inicio {
+    background: linear-gradient(135deg, #ff9800, #ffa726);
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .cabecalho-pedido h1 {
+    .cabecalho-sucesso h1 {
         font-size: 2em;
     }
     
-    .bebida-info {
+    .info-linha {
         flex-direction: column;
-        align-items: flex-start;
         gap: 5px;
     }
     
-    .acoes-pedido {
-        flex-direction: column;
-        align-items: center;
+    .bebida-info {
+        flex-wrap: wrap;
     }
     
-    .btn-imprimir, .btn-novo-pedido, .btn-inicio {
-        width: 200px;
+    .timeline {
+        padding-left: 35px;
+    }
+    
+    .acoes-finais {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-acao {
+        width: 100%;
     }
 }
 </style>
