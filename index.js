@@ -2,7 +2,7 @@ import express from "express";
 import { engine } from 'express-handlebars'; 
 import path from "path";
 import bodyParser from 'body-parser';
-import fetch from 'node-fetch'; // Adicionado para compatibilidade com fetch
+import fetch from 'node-fetch'; 
 
 const app = express();
 const port = 3000;
@@ -13,7 +13,7 @@ app.engine('handlebars', engine({
     helpers: {
         eq: (a, b) => a === b,
         json: (context) => JSON.stringify(context),
-        currency: (value) => parseFloat(value).toFixed(2).replace('.', ',') // Novo helper para formatação de moeda
+        currency: (value) => parseFloat(value).toFixed(2).replace('.', ',')
     }
 }));
 
@@ -189,10 +189,9 @@ app.post("/finalizar-pedido", (req, res) => {
         taxaEntrega: parseFloat(taxaEntrega).toFixed(2)
     } : null;
     
-    // Gerar timestamp para o pedido
     const timestamp = Date.now();
     
-    res.render("pedido-completo", { // Alterado de "pedido-completo" para "pedido-final"
+    res.render("pedido-completo", {
         // Timestamp do pedido
         timestamp,
         
@@ -216,19 +215,11 @@ app.post("/finalizar-pedido", (req, res) => {
     });
 });
 
-// REMOVER esta rota, pois a página de confirmação será acessada via POST
-// app.get("/pedido-completo", (req, res) => {
-//     res.render("pedido-final");
-// });
 
 app.post("/pedido", (req, res) => {
     const { sabores = [], tamanho, borda, adicionais = [], total } = req.body;
-    
-    // Ensure arrays are properly handled (Express might send single values as strings)
     const saboresArray = ensureArray(sabores);
     const adicionaisArray = ensureArray(adicionais);
-    
-    // Render the pedido template with the order data
     res.render("pedido", {
         sabores: saboresArray,
         tamanho: tamanho || 'Não selecionado',
