@@ -73,7 +73,7 @@ app.get("/api/endereco/:cep", async (req, res) => {
     }
     
     try {
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/` );
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
         
         if (data.erro) {
@@ -239,5 +239,6 @@ app.post("/pedido", (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`🚀 Pizzaria MucaRoela rodando em http://localhost:${port}` );
+    console.log(`🚀 Pizzaria MucaRoela rodando em http://localhost:${port}`);
 });
+
